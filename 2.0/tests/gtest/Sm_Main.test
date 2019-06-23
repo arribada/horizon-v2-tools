@@ -1,0 +1,8 @@
+#!/bin/bash
+
+source verifUtils.sh
+
+filename=$0
+filename="${filename%.*}"
+
+runTestSuite $filename

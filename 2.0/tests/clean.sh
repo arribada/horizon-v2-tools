@@ -1,0 +1,1 @@
+rm -rf aclocal.m4 AUTHORS ChangeLog config.log COPYING autom4te.cache/ INSTALL install-sh ltmain.sh missing Makefile.in NEWS configure config.guess config.sub m4 config.status Makefile src/Makefile depcomp *libtool compile test-driver
