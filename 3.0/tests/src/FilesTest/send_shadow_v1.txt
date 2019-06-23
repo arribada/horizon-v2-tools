@@ -1,3 +1,0 @@
-{ "state": { "desired": { "device_status": { "battery": 100, "last_gps_location": 
-{ "longitude": 1111, "latitude": 1111, "height": 2222 } 
-} } } }
