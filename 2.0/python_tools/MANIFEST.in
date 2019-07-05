@@ -1,0 +1,6 @@
+include LICENSE
+include MANIFEST.in
+include README.rst
+
+recursive-include tests *.sh
+recursive-include pysensor_test/imports *
