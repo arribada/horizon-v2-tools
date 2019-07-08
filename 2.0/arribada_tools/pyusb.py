@@ -115,16 +115,17 @@ class UsbHost():
     PRODUCT_ID = 0x0100     # Seemingly spare for now
 
     dev = None
+    devices = None
 
-    def __init__(self):
+    def __init__(self, dev_index=0):
         self._endpoints = []
         dev = usb.core.find(find_all=True)
         devs = [cfg for cfg in dev if cfg.idVendor == UsbHost.VENDOR_ID and cfg.idProduct == UsbHost.PRODUCT_ID]
+        self.devices = devs
         if not devs:
             raise ExceptionUsbDeviceNotFound
-        # Allow USB_INDEX environment variable to set which device in the
-        # enumeration list we talk to i.e., 0....N-1
-        usb_index = 0 if 'USB_INDEX' not in os.environ else int(os.environ['USB_INDEX'])
+        # Connect to given USB_INDEX (default value is 0)
+        usb_index = dev_index
         # Make sure USB_INDEX is in valid range
         if usb_index >= len(devs):
             logger.warn('USB_INDEX=%u is out of range - using index 0 instead', usb_index)
@@ -168,6 +169,9 @@ class UsbHost():
         self._endpoints = None
         if self.dev is not None:
             usb.util.dispose_resources(self.dev) # Release interface
+
+    def get_devices(self):
+        return self.devices
 
     def __del__(self):
         self.cleanup()
