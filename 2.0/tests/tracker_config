@@ -132,6 +132,8 @@ try:
     if args.list_ids:
         # Store current USB index for reconnection
         current_index = comms_backend.get_dev_index()
+        # Create JSON object containing all devices
+        device_ids = {}
         # Iterate through all devices, printing the ID of each
         devs = comms_backend.get_devices()
         for i in range(len(devs)):
@@ -139,7 +141,8 @@ try:
             comms_backend.cleanup()
             comms_backend = backend.BackendUsb(dev_index=i)
             cfg = interface.ConfigInterface(comms_backend)
-            print ("DEVICE %i - %s") % (i, json.loads(cfg.read_json_configuration())["system"]["deviceIdentifier"])
+            device_ids[i] = json.loads(cfg.read_json_configuration())["system"]["deviceIdentifier"]
+        print json.dumps(device_ids)
         # Reconnect to previous device
         comms_backend.cleanup()
         comms_backend = backend.BackendUsb(dev_index=current_index)
