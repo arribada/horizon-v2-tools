@@ -104,6 +104,8 @@ try:
         cfg.fw_upgrade(args.firmware_type, args.firmware.read())
 
     if args.connect_id:
+        # Store current USB index for reconnection
+        current_index = comms_backend.get_dev_index()
         # Iterate through all devices, comparing each to the given ID
         devs = comms_backend.get_devices()
         dev_index = -1
@@ -118,8 +120,8 @@ try:
                 dev_index = i
 
         if dev_index == -1:
-            print "Error: ID not found, connecting to device index 0"
-            dev_index = 0
+            print ("Error: ID not found, connecting to device index %i") % (current_index)
+            dev_index = current_index
         else:
             print ("Connecting to device at index %s") % (dev_index)
 
