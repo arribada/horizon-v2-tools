@@ -141,7 +141,11 @@ try:
             comms_backend.cleanup()
             comms_backend = backend.BackendUsb(dev_index=i)
             cfg = interface.ConfigInterface(comms_backend)
-            device_ids[i] = json.loads(cfg.read_json_configuration())["system"]["deviceIdentifier"]
+            config = json.loads(cfg.read_json_configuration())
+            if "system" in config:
+                device_ids[i] = config["system"]["deviceIdentifier"]
+            else:
+                device_ids[i] = "UNASSIGNED"
         print json.dumps(device_ids)
         # Reconnect to previous device
         comms_backend.cleanup()
