@@ -66,7 +66,7 @@ try:
                 dev_index = i
 
         if dev_index == -1:
-            print ("Error: ID not found, connecting to device index %i") % (0)
+            print "Error: ID not found, connecting to device index 0"
             dev_index = 0
         else:
             print ("Connecting to device at index %s") % (dev_index)
