@@ -27,7 +27,7 @@ parser.add_argument('--get_date_time', action='store_true', required=False)
 parser.add_argument('--firmware_type', required=False)
 parser.add_argument('--firmware', type=argparse.FileType('rb'), required=False)
 parser.add_argument('--version', action='store_true', required=False)
-parser.add_argument('--connect_id', required=False)
+parser.add_argument('--id', required=False)
 parser.add_argument('--list_ids', action='store_true', required=False)
 
 args = parser.parse_args()
@@ -50,6 +50,29 @@ try:
 
     if args.bluetooth_addr:
         comms_backend = backend.BackendBluetooth(dev_addr=args.bluetooth_addr)
+    elif args.id:
+        comms_backend = backend.BackendUsb()
+        # Iterate through all devices, comparing each to the given ID
+        devs = comms_backend.get_devices()
+        dev_index = -1
+        for i in range(len(devs)):
+            # Connect to device
+            comms_backend.cleanup()
+            comms_backend = backend.BackendUsb(dev_index=i)
+            cfg = interface.ConfigInterface(comms_backend)
+            # Compare device IDs
+            dev_id = json.loads(cfg.read_json_configuration())["system"]["deviceIdentifier"]
+            if args.id == dev_id:
+                dev_index = i
+
+        if dev_index == -1:
+            print ("Error: ID not found, connecting to device index %i") % (0)
+            dev_index = 0
+        else:
+            print ("Connecting to device at index %s") % (dev_index)
+
+        comms_backend.cleanup()
+        comms_backend = backend.BackendUsb(dev_index=dev_index)
     else:
         comms_backend = backend.BackendUsb()
     
@@ -102,32 +125,6 @@ try:
 
     if args.firmware_type and args.firmware:
         cfg.fw_upgrade(args.firmware_type, args.firmware.read())
-
-    if args.connect_id:
-        # Store current USB index for reconnection
-        current_index = comms_backend.get_dev_index()
-        # Iterate through all devices, comparing each to the given ID
-        devs = comms_backend.get_devices()
-        dev_index = -1
-        for i in range(len(devs)):
-            # Connect to device
-            comms_backend.cleanup()
-            comms_backend = backend.BackendUsb(dev_index=i)
-            cfg = interface.ConfigInterface(comms_backend)
-            # Compare device IDs
-            dev_id = json.loads(cfg.read_json_configuration())["system"]["deviceIdentifier"]
-            if args.connect_id == dev_id:
-                dev_index = i
-
-        if dev_index == -1:
-            print ("Error: ID not found, connecting to device index %i") % (current_index)
-            dev_index = current_index
-        else:
-            print ("Connecting to device at index %s") % (dev_index)
-
-        comms_backend.cleanup()
-        comms_backend = backend.BackendUsb(dev_index=dev_index)
-        cfg = interface.ConfigInterface(comms_backend)
 
     if args.list_ids:
         # Store current USB index for reconnection
