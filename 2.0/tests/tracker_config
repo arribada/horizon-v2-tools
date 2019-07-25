@@ -43,6 +43,8 @@ if args.version:
         
 try:
 
+    logger = logging.getLogger(__name__)
+
     if args.debug:
         logging.basicConfig(format='%(asctime)s\t%(module)s\t%(levelname)s\t%(message)s', level=logging.DEBUG)
     else:
@@ -61,7 +63,7 @@ try:
             comms_backend = backend.BackendUsb(dev_index=i)
             cfg = interface.ConfigInterface(comms_backend)
             # Compare device IDs
-            dev_id = json.loads(cfg.read_json_configuration())["system"]["deviceIdentifier"]
+            dev_id = json.loads(cfg.get_status())["device_id"]
             if args.id == dev_id:
                 dev_index = i
 
@@ -138,11 +140,7 @@ try:
             comms_backend.cleanup()
             comms_backend = backend.BackendUsb(dev_index=i)
             cfg = interface.ConfigInterface(comms_backend)
-            config = json.loads(cfg.read_json_configuration())
-            if "system" in config:
-                device_ids[i] = config["system"]["deviceIdentifier"]
-            else:
-                device_ids[i] = "UNASSIGNED"
+            device_ids[i] = cfg.get_status()["device_id"]
         print json.dumps(device_ids)
         # Reconnect to previous device
         comms_backend.cleanup()
