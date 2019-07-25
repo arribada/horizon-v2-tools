@@ -194,33 +194,6 @@ class ConfigItem(TaggedItem):
             setattr(self, k, kwargs[k])
 
 
-class ConfigItem_System_DeviceIdentifier(ConfigItem):
-    tag = 0x0400
-    path = 'system'
-    params = ['deviceIdentifier']
-    json_params = params
-
-    def __init__(self, **kwargs):
-        ConfigItem.__init__(self, b'8s', self.params, **kwargs)
-
-    def pack(self):
-        old = self.deviceIdentifier
-        self.deviceIdentifier = binascii.unhexlify(self.deviceIdentifier.replace(':', ''))
-        data = ConfigItem.pack(self)
-        self.deviceIdentifier = old
-        return data
-
-    def unpack(self, data):
-        ConfigItem.unpack(self, data)
-        device_id = binascii.hexlify(self.deviceIdentifier)
-        new_id = b''
-        for i in range(len(device_id)):
-            new_id = new_id + device_id[i]
-            if i & 1 and i != (len(device_id)-1):
-                new_id = new_id + ':'
-        self.deviceIdentifier = new_id
-
-
 class ConfigItem_GPS_LogPositionEnable(ConfigItem):
     tag = 0x0000
     path = 'gps'

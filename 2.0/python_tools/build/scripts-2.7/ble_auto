@@ -233,20 +233,8 @@ class Device(object):
                 logger.error('Failed to read GPS last known position from device=%s', self._dev_addr)
                 return 1
 
-        try:
-            sys_device_id = json.loads(cfg.read_json_configuration(tag=config.ConfigItem_System_DeviceIdentifier.tag))
-            sys_device_id = sys_device_id['system']['deviceIdentifier']
-        except Exception as e:
-            if type(e) is interface.ExceptionBackendCommsError and \
-                e.args[0] == 'CMD_ERROR_CONFIG_TAG_NOT_SET':
-                logger.warn('System device ID is not set on device=%s', self._dev_addr)
-                sys_device_id = 'null'
-            else:
-                logger.error('Failed to read system device ID from device=%s', self._dev_addr)
-                return 1
-
-        logger.info('Status for device=%s: id=%s status=%s battery=%s log_file=%s last_pos=%s',
-                    self._dev_addr, sys_device_id, status, battery, log_file_size,
+        logger.info('Status for device=%s: status=%s battery=%s log_file=%s last_pos=%s',
+                    self._dev_addr, status, battery, log_file_size,
                     last_known_pos)
 
         # Mark task as complete
