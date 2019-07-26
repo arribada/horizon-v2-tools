@@ -15,7 +15,8 @@ There are currently two releases;
 
 - Horizon tag firmware
 - Python tools
-    - [Usage described in wiki](https://github.com/arribada/horizon/wiki)
+
+Usage described in [wiki](https://github.com/arribada/horizon/wiki).
 
 ### Arribada Horizon 3.0 ###
 
