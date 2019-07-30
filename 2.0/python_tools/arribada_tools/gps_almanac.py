@@ -6,10 +6,7 @@ from arribada_tools import gps_config, backend, interface
 def apply_almanac(serial, baud, comms_backend, almanac_file):
     gps_backend = None
     if serial:
-        if baud:
-            gps_backend = gps_config.GPSSerialBackend(serial, baudrate=baud)
-        else:
-            print("Unexpected error: Missing baud rate. Provide it with '--baud'.")
+        gps_backend = gps_config.GPSSerialBackend(serial, baudrate=baud)
     else:
         gps_backend = gps_config.GPSBridgedBackend(comms_backend)
         interface.ConfigInterface(comms_backend).gps_config(True)
