@@ -71,9 +71,10 @@ class BackendBluetooth(_Backend):
 
 class BackendUsb(_Backend):
 
-    def __init__(self, *kwargs):
+    def __init__(self, dev_index=0):
         try:
-            self._usb = pyusb.UsbHost()
+            self._usb = pyusb.UsbHost(dev_index)
+            self._dev_index = dev_index
         except:
             raise ExceptionBackendNotFound
 
@@ -153,6 +154,12 @@ class BackendUsb(_Backend):
                 data = data + resp.buffer
             length = length - len(resp.buffer)
         return data
+
+    def get_devices(self):
+        return self._usb.get_devices()
+
+    def get_dev_index(self):
+        return self._dev_index
 
     def cleanup(self):
         self._usb.cleanup()
