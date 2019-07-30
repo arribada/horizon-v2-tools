@@ -4,7 +4,7 @@ import argparse
 import logging
 import sys
 import json
-from arribada_tools import backend, interface, config, __version__
+from arribada_tools import backend, interface, config, __version__, gps_almanac
 
 parser = argparse.ArgumentParser()
 parser.add_argument('--ble_addr', dest='bluetooth_addr', required=False)
@@ -29,6 +29,10 @@ parser.add_argument('--firmware', type=argparse.FileType('rb'), required=False)
 parser.add_argument('--version', action='store_true', required=False)
 parser.add_argument('--id', required=False)
 parser.add_argument('--list_ids', action='store_true', required=False)
+
+parser.add_argument('--gps_almanac', type=argparse.FileType('rb'), required=False)
+parser.add_argument('--serial', required=False, help="Serial port used in GPS almanac communication.")
+parser.add_argument('--baud', default=115200, type=int, required=False, help="Baud rate used in GPS almanac communication.")
 
 args = parser.parse_args()
 comms_backend = None
@@ -146,6 +150,10 @@ try:
         comms_backend.cleanup()
         comms_backend = backend.BackendUsb(dev_index=current_index)
         cfg = interface.ConfigInterface(comms_backend)
+
+    if args.gps_almanac:
+        gps_almanac.apply_almanac(args.serial, args.baud, comms_backend, args.gps_almanac)
+
 except:
     print "Unexpected error: %s" % str(sys.exc_info())
 
