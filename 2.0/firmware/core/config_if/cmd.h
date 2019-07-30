@@ -204,6 +204,11 @@ typedef struct __attribute__((__packed__))
     uint32_t ble_firmware_version;
     uint32_t configuration_format_version;
     device_id_t mcu_uid;
+    uint8_t charge_level;
+    uint32_t log_file_size;
+    bool pressure_enabled;
+    bool temp_enabled;
+    bool accel_enabled; 
 } cmd_status_resp_t;
 
 typedef struct __attribute__((__packed__))

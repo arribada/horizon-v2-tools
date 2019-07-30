@@ -2496,7 +2496,24 @@ static void status_req(cmd_t * req, uint32_t size)
     resp->p.cmd_status_resp.ble_firmware_version = version;
     resp->p.cmd_status_resp.configuration_format_version = SYS_CONFIG_FORMAT_VERSION;
 
+    // Get unique ID
     syshal_device_id(&(resp->p.cmd_status_resp.mcu_uid));
+
+    // Get battery level
+    resp->p.cmd_status_resp.charge_level = syshal_batt_level();
+
+    // Get log file size
+    fs_stat_t stat;
+    int ret = fs_stat(file_system, FS_FILE_ID_LOG, &stat);
+    if (FS_NO_ERROR == ret)
+        resp->p.cmd_status_resp.log_file_size = stat.size;
+    else
+        resp->p.cmd_status_resp.log_file_size = 0;
+
+    // Get which sensors are enabled
+    resp->p.cmd_status_resp.pressure_enabled = sys_config.sys_config_pressure_sensor_log_enable.contents.enable;
+    resp->p.cmd_status_resp.temp_enabled = sys_config.sys_config_temp_sensor_log_enable.contents.enable;
+    resp->p.cmd_status_resp.accel_enabled = sys_config.sys_config_axl_log_enable.contents.enable;
 
     buffer_write_advance(&config_if_send_buffer, CMD_SIZE(cmd_status_resp_t));
     config_if_send_priv(&config_if_send_buffer);
