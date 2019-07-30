@@ -63,8 +63,8 @@ try:
             comms_backend = backend.BackendUsb(dev_index=i)
             cfg = interface.ConfigInterface(comms_backend)
             # Compare device IDs
-            dev_id = json.loads(cfg.get_status())["device_id"]
-            if args.id == dev_id:
+            dev_id = cfg.get_status()["device_id"]
+            if int(args.id) == dev_id:
                 dev_index = i
 
         if dev_index == -1:
