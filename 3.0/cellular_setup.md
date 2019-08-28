@@ -81,10 +81,6 @@
 
     ``sudo tracker_config --write yourThingName.json --setdatetimeutc``
 
-12. Apply cellular configuration:
-
-    ``sudo cellular_config --root_ca VeriSign-Class-3-Public-Primary-Certification-Authority-G5.pem --cert yourThingName.cert --key yourThingName.key``
-
 13. Test cellular connection:
 
     ``sudo tracker_config --test_mode CELLULAR``
