@@ -1,22 +1,18 @@
 # Arribada Horizon tag V3 quickstart
 
-1. Verify battery level is at 100:
-
-   ``sudo tracker_config --battery``
-   
-2. Reset flash:
+1. Reset flash:
 
    ``sudo tracker_config --reset FLASH``
    
-3. Reset CPU:
+2. Reset CPU:
 
    ``sudo tracker_config --reset CPU``
     
-4. Erase existing config:
+3. Erase existing config:
 
     ``sudo tracker_config --erase``
 
-5. Update almanac:
+4. Update almanac:
 
     ``sudo gps_almanac --file mgaoffline.ubx``
 
