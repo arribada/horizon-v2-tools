@@ -51,3 +51,4 @@
 |Flashing Blue    |   Test message to satellite sending in progress                                                  |
 |Solid Blue       |   Test satellite message sent LED will stay on for 5 seconds                                     |
 
+First time cellular tests can take a while.
