@@ -53,33 +53,33 @@
     }
     ```
 
-6. Verify battery level is at 100:
-
-   ``sudo tracker_config --battery``
-
-7. Reset flash:
+6. Reset flash:
 
    ``sudo tracker_config --reset FLASH``
    
-8. Reset CPU:
+7. Reset CPU:
 
    ``sudo tracker_config --reset CPU``
     
-9. Erase existing config:
+8. Erase existing config:
 
     ``sudo tracker_config --erase``
 
-10. Update almanac:
+9. Update almanac:
 
     ``sudo gps_almanac --file mgaoffline.ubx``
 
-11. Program the GPS:
+10. Program the GPS:
 
     ``sudo gps_ascii_config --file ublox_gnss_configuration.dat``
 
-12. Apply configuration file:
+11. Apply configuration file:
 
     ``sudo tracker_config --write yourThingName.json --setdatetimeutc``
+    
+12. Create new log file (previous log was deleted when flash was reset):
+    
+    ``sudo tracker_config --create_log LINEAR``
 
 13. Test cellular connection:
 
@@ -96,10 +96,6 @@
 |Flashing Blue    |   Test message to satellite sending in progress                                                  |
 |Solid Blue       |   Test satellite message sent LED will stay on for 5 seconds                                     |
 
-15. Test GPS connection:
+14. Test GPS connection:
 
     ``sudo tracker_config --test_mode GPS``
-
-16. Create new log file (previous log was deleted when flash was reset):
-    
-    ``sudo tracker_config --create_log LINEAR``
