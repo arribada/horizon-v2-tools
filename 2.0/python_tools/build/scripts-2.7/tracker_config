@@ -4,7 +4,8 @@ import argparse
 import logging
 import sys
 import json
-from arribada_tools import backend, interface, config, __version__
+import datetime
+from arribada_tools import backend, interface, config, __version__, gps_almanac
 
 parser = argparse.ArgumentParser()
 parser.add_argument('--ble_addr', dest='bluetooth_addr', required=False)
@@ -23,12 +24,17 @@ parser.add_argument('--reset', required=False)
 parser.add_argument('--protect', action='store_true', required=False)
 parser.add_argument('--unprotect', action='store_true', required=False)
 parser.add_argument('--set_date_time', required=False)
+parser.add_argument('--set_date_time_utc', action='store_true', required=False)
 parser.add_argument('--get_date_time', action='store_true', required=False)
 parser.add_argument('--firmware_type', required=False)
 parser.add_argument('--firmware', type=argparse.FileType('rb'), required=False)
 parser.add_argument('--version', action='store_true', required=False)
 parser.add_argument('--id', required=False)
 parser.add_argument('--list_ids', action='store_true', required=False)
+
+parser.add_argument('--gps_almanac', type=argparse.FileType('rb'), required=False)
+parser.add_argument('--serial', required=False, help="Serial port used in GPS almanac communication.")
+parser.add_argument('--baud', default=115200, type=int, required=False, help="Baud rate used in GPS almanac communication.")
 
 args = parser.parse_args()
 comms_backend = None
@@ -63,8 +69,8 @@ try:
             comms_backend = backend.BackendUsb(dev_index=i)
             cfg = interface.ConfigInterface(comms_backend)
             # Compare device IDs
-            dev_id = json.loads(cfg.get_status())["device_id"]
-            if args.id == dev_id:
+            dev_id = cfg.get_status()["device_id"]
+            if int(args.id) == dev_id:
                 dev_index = i
 
         if dev_index == -1:
@@ -102,7 +108,11 @@ try:
         cfg.write_json_configuration(args.write.read())
     
     if args.set_date_time:
+        logging.warn('Please consider using --set_date_time_utc instead')
         cfg.write_json_configuration('{"rtc": { "dateTime": "%s"}}' % args.set_date_time)
+
+    if args.set_date_time_utc:
+        cfg.write_json_configuration(json='{"rtc": { "dateTime": "%s"}}' % str(datetime.datetime.utcnow()))
     
     if args.get_date_time:
         print cfg.read_json_configuration(tag=config.ConfigItem_RTC_CurrentDateTime.tag)
@@ -131,10 +141,13 @@ try:
     if args.list_ids:
         # Store current USB index for reconnection
         current_index = comms_backend.get_dev_index()
+        logger.debug(current_index)
         # Create JSON object containing all devices
         device_ids = {}
         # Iterate through all devices, printing the ID of each
         devs = comms_backend.get_devices()
+        logger.debug(devs)
+        # logging.warn(devs)
         for i in range(len(devs)):
             # Connect to device
             comms_backend.cleanup()
@@ -146,6 +159,10 @@ try:
         comms_backend.cleanup()
         comms_backend = backend.BackendUsb(dev_index=current_index)
         cfg = interface.ConfigInterface(comms_backend)
+
+    if args.gps_almanac:
+        gps_almanac.apply_almanac(args.serial, args.baud, comms_backend, args.gps_almanac)
+
 except:
     print "Unexpected error: %s" % str(sys.exc_info())
 
