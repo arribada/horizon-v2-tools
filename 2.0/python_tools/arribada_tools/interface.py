@@ -25,7 +25,7 @@ def resp_error_handler(req, resp, expected_resp=None):
 
 class ConfigInterface(object):
 
-    timeout = 2.0
+    timeout = 5.0
 
     def __init__(self, backend):
         self._backend = backend
