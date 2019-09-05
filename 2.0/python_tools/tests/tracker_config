@@ -4,6 +4,7 @@ import argparse
 import logging
 import sys
 import json
+import datetime
 from arribada_tools import backend, interface, config, __version__, gps_almanac
 
 parser = argparse.ArgumentParser()
@@ -23,6 +24,7 @@ parser.add_argument('--reset', required=False)
 parser.add_argument('--protect', action='store_true', required=False)
 parser.add_argument('--unprotect', action='store_true', required=False)
 parser.add_argument('--set_date_time', required=False)
+parser.add_argument('--set_date_time_utc', action='store_true', required=False)
 parser.add_argument('--get_date_time', action='store_true', required=False)
 parser.add_argument('--firmware_type', required=False)
 parser.add_argument('--firmware', type=argparse.FileType('rb'), required=False)
@@ -106,7 +108,11 @@ try:
         cfg.write_json_configuration(args.write.read())
     
     if args.set_date_time:
+        logging.warn('Please consider using --set_date_time_utc instead')
         cfg.write_json_configuration('{"rtc": { "dateTime": "%s"}}' % args.set_date_time)
+
+    if args.set_date_time_utc:
+        cfg.write_json_configuration(json='{"rtc": { "dateTime": "%s"}}' % str(datetime.datetime.utcnow()))
     
     if args.get_date_time:
         print cfg.read_json_configuration(tag=config.ConfigItem_RTC_CurrentDateTime.tag)
@@ -135,10 +141,13 @@ try:
     if args.list_ids:
         # Store current USB index for reconnection
         current_index = comms_backend.get_dev_index()
+        logger.debug(current_index)
         # Create JSON object containing all devices
         device_ids = {}
         # Iterate through all devices, printing the ID of each
         devs = comms_backend.get_devices()
+        logger.debug(devs)
+        # logging.warn(devs)
         for i in range(len(devs)):
             # Connect to device
             comms_backend.cleanup()
