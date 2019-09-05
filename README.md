@@ -13,7 +13,10 @@ There are currently two releases;
 
 ### Arribada Horizon 2.0 ###
 
-TBA
+- Horizon tag firmware
+- Python tools
+
+Usage described in [wiki](https://github.com/arribada/horizon/wiki).
 
 ### Arribada Horizon 3.0 ###
 

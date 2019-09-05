@@ -1,0 +1,170 @@
+#!/usr/bin/python
+
+import argparse
+import logging
+import sys
+import json
+import datetime
+from arribada_tools import backend, interface, config, __version__, gps_almanac
+
+parser = argparse.ArgumentParser()
+parser.add_argument('--ble_addr', dest='bluetooth_addr', required=False)
+parser.add_argument('--debug', action='store_true', required=False)
+parser.add_argument('--write', type=argparse.FileType('r'), required=False)
+parser.add_argument('--read', type=argparse.FileType('w'), required=False)
+parser.add_argument('--read_log', type=argparse.FileType('wb'), required=False)
+parser.add_argument('--battery', action='store_true', required=False)
+parser.add_argument('--status', action='store_true', required=False)
+parser.add_argument('--save', action='store_true', required=False)
+parser.add_argument('--restore', action='store_true', required=False)
+parser.add_argument('--erase', action='store_true', required=False)
+parser.add_argument('--erase_log', action='store_true', required=False)
+parser.add_argument('--create_log', required=False)
+parser.add_argument('--reset', required=False)
+parser.add_argument('--protect', action='store_true', required=False)
+parser.add_argument('--unprotect', action='store_true', required=False)
+parser.add_argument('--set_date_time', required=False)
+parser.add_argument('--set_date_time_utc', action='store_true', required=False)
+parser.add_argument('--get_date_time', action='store_true', required=False)
+parser.add_argument('--firmware_type', required=False)
+parser.add_argument('--firmware', type=argparse.FileType('rb'), required=False)
+parser.add_argument('--version', action='store_true', required=False)
+parser.add_argument('--id', required=False)
+parser.add_argument('--list_ids', action='store_true', required=False)
+
+parser.add_argument('--gps_almanac', type=argparse.FileType('rb'), required=False)
+parser.add_argument('--serial', required=False, help="Serial port used in GPS almanac communication.")
+parser.add_argument('--baud', default=115200, type=int, required=False, help="Baud rate used in GPS almanac communication.")
+
+args = parser.parse_args()
+comms_backend = None
+
+if not any(vars(args).values()):
+    parser.print_help()
+    sys.exit()
+
+if args.version:
+    print 'Version:', __version__
+    sys.exit()
+        
+try:
+
+    logger = logging.getLogger(__name__)
+
+    if args.debug:
+        logging.basicConfig(format='%(asctime)s\t%(module)s\t%(levelname)s\t%(message)s', level=logging.DEBUG)
+    else:
+        logging.basicConfig(format='%(asctime)s\t%(module)s\t%(levelname)s\t%(message)s', level=logging.WARN)
+
+    if args.bluetooth_addr:
+        comms_backend = backend.BackendBluetooth(dev_addr=args.bluetooth_addr)
+    elif args.id:
+        comms_backend = backend.BackendUsb()
+        # Iterate through all devices, comparing each to the given ID
+        devs = comms_backend.get_devices()
+        dev_index = -1
+        for i in range(len(devs)):
+            # Connect to device
+            comms_backend.cleanup()
+            comms_backend = backend.BackendUsb(dev_index=i)
+            cfg = interface.ConfigInterface(comms_backend)
+            # Compare device IDs
+            dev_id = cfg.get_status()["device_id"]
+            if int(args.id) == dev_id:
+                dev_index = i
+
+        if dev_index == -1:
+            print "Error: ID not found, connecting to device index 0"
+            dev_index = 0
+        else:
+            print ("Connecting to device at index %s") % (dev_index)
+
+        comms_backend.cleanup()
+        comms_backend = backend.BackendUsb(dev_index=dev_index)
+    else:
+        comms_backend = backend.BackendUsb()
+    
+    cfg = interface.ConfigInterface(comms_backend)
+    
+    if args.read_log:
+        args.read_log.write(cfg.read_log_file(0, 0))
+    
+    if args.erase_log:
+        cfg.erase_log_file()
+    
+    if args.create_log:
+        cfg.create_log_file(args.create_log)
+    
+    if args.restore:
+        cfg.restore_configuration()
+    
+    if args.unprotect:
+        cfg.unprotect_configuration()
+    
+    if args.erase:
+        cfg.erase_configuration()
+    
+    if args.write:
+        cfg.write_json_configuration(args.write.read())
+    
+    if args.set_date_time:
+        logging.warn('Please consider using --set_date_time_utc instead')
+        cfg.write_json_configuration('{"rtc": { "dateTime": "%s"}}' % args.set_date_time)
+
+    if args.set_date_time_utc:
+        cfg.write_json_configuration(json='{"rtc": { "dateTime": "%s"}}' % str(datetime.datetime.utcnow()))
+    
+    if args.get_date_time:
+        print cfg.read_json_configuration(tag=config.ConfigItem_RTC_CurrentDateTime.tag)
+    
+    if args.save:
+        cfg.save_configuration()
+    
+    if args.read:
+        args.read.write(cfg.read_json_configuration())
+    
+    if args.protect:
+        cfg.protect_configuration()
+    
+    if args.status:
+        print json.dumps(cfg.get_status())
+    
+    if args.battery:
+        print json.dumps(cfg.get_battery_status())
+    
+    if args.reset:
+        cfg.reset(args.reset)
+
+    if args.firmware_type and args.firmware:
+        cfg.fw_upgrade(args.firmware_type, args.firmware.read())
+
+    if args.list_ids:
+        # Store current USB index for reconnection
+        current_index = comms_backend.get_dev_index()
+        logger.debug(current_index)
+        # Create JSON object containing all devices
+        device_ids = {}
+        # Iterate through all devices, printing the ID of each
+        devs = comms_backend.get_devices()
+        logger.debug(devs)
+        # logging.warn(devs)
+        for i in range(len(devs)):
+            # Connect to device
+            comms_backend.cleanup()
+            comms_backend = backend.BackendUsb(dev_index=i)
+            cfg = interface.ConfigInterface(comms_backend)
+            device_ids[i] = cfg.get_status()["device_id"]
+        print json.dumps(device_ids)
+        # Reconnect to previous device
+        comms_backend.cleanup()
+        comms_backend = backend.BackendUsb(dev_index=current_index)
+        cfg = interface.ConfigInterface(comms_backend)
+
+    if args.gps_almanac:
+        gps_almanac.apply_almanac(args.serial, args.baud, comms_backend, args.gps_almanac)
+
+except:
+    print "Unexpected error: %s" % str(sys.exc_info())
+
+if comms_backend:
+    comms_backend.cleanup()
