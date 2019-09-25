@@ -452,3 +452,17 @@ class ConfigMessage_LOG_READ_RESP(ConfigMessage):
 
     def __init__(self, **kwargs):
         ConfigMessage.__init__(self, b'BI', ['error_code', 'length'], **kwargs)
+
+class ConfigMessage_ID_REQ(ConfigMessageHeader):
+
+    cmd = 29
+    name = 'ID_REQ'
+
+
+class ConfigMessage_ID_RESP(ConfigMessage):
+
+    cmd = 30
+    name = 'ID_RESP'
+
+    def __init__(self, **kwargs):
+        ConfigMessage.__init__(self, b'BQ', ['error_code', 'device_id'], **kwargs)
