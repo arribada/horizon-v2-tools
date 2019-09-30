@@ -13,11 +13,6 @@ There are currently two releases;
 
 ### Arribada Horizon 2.0 ###
 
-- Horizon tag firmware
-- Python tools
+This repository contains the python tools which allow users to configure and interact with V2 tags, using the firmware found in [this repository](https://github.com/arribada/horizon-v2-firmware).
 
-Usage described in [wiki](https://github.com/arribada/horizon/wiki).
-
-### Arribada Horizon 3.0 ###
-
-TBA
+Usage described in [wiki](https://github.com/arribada/horizon-v2-tools/wiki).
